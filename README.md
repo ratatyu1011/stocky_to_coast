@@ -20,6 +20,18 @@ Manual re‑entry between Stocky and vendor carts is slow and error‑prone. Thi
 - **Idempotent file naming** includes vendor name in the content hash.
 - **CI‑friendly**: non‑zero exit on hard validation failures; JSON summary for programmatic consumption.
 
+## Architecture (one‑pager)
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./architecture_dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="./architecture_light.svg">
+    <img src="./architecture_light.svg" alt="Stocky → Vendor Cart ETL architecture (one‑page overview)" width="920">
+  </picture>
+</p>
+
+> **Print:** open either SVG in a new tab and print; they’re vector so they’re crisp on Letter/A4.
+
 ---
 
 ## Data Contract (Input → Output)
@@ -32,18 +44,15 @@ Manual re‑entry between Stocky and vendor carts is slow and error‑prone. Thi
 - `Total Cost (base)` _(float ≥ 0)_
 
 **Business rule (row‑level):**
-
 ```
 abs(Qty Ordered * Cost (base) - Total Cost (base)) <= 0.01
 ```
 
 **Transform (business rules):**
-
 - Collapse duplicate SKUs; **sum quantities**; recompute totals.
 - Normalize money values to configured **decimal places** (defaults to 2).
 
 **Output (vendor cart CSV):**
-
 - Columns (order enforced by vendor config):
   - `Item Id`, `Qty Ordered`, `Unit Price`, `Extended Price`
 - CSV formatting per vendor config (delimiter, quoting, decimals).
@@ -58,9 +67,7 @@ source .venv/bin/activate           # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-**Requirements** (key):
-
-- `pandas`, `numpy`, `pandera`, `pyyaml`, `pydantic`
+**Requirements** (key): `pandas`, `numpy`, `pandera`, `pyyaml`, `pydantic`
 
 ---
 
@@ -80,11 +87,17 @@ python stocky_to_coast.py --po 1848 --input sample/po_1848.csv --price-history s
 ## CLI
 
 ```bash
-python stocky_to_coast.py   --po <PO_NUMBER>   --input <path_to_stocky_csv>   [--vendor coast|erikson_music|erikson_audio | --vendor-config path/to/custom.yml]   [--price-history path/to/price_history.csv]   [--outdir runs]   [--soft-validate]   [--sku-pattern "^[A-Za-z0-9+\-_.]+$"]
+python stocky_to_coast.py \
+  --po <PO_NUMBER> \
+  --input <path_to_stocky_csv> \
+  [--vendor coast|erikson_music|erikson_audio | --vendor-config path/to/custom.yml] \
+  [--price-history path/to/price_history.csv] \
+  [--outdir runs] \
+  [--soft-validate] \
+  [--sku-pattern "^[A-Za-z0-9+\\-_.]+$"]
 ```
 
 **Flags:**
-
 - `--vendor` _(or `--vendor-config`)_: selects the output formatting (columns, delimiter, quoting, decimals).
 - `--soft-validate`: quarantines rows that violate the business rule to `quarantine.csv` instead of failing the run.
 - `--sku-pattern`: optional regex for SKU validation; **overrides** any vendor config pattern.
@@ -95,7 +108,6 @@ python stocky_to_coast.py   --po <PO_NUMBER>   --input <path_to_stocky_csv>   [-
 ## Vendor configuration (YAML)
 
 Place YAML files under `vendor_configs/`. Example:
-
 ```yaml
 # vendor_configs/coast.yml
 name: coast
@@ -106,7 +118,7 @@ output:
   quoting: "all"
 input:
   # Optional SKU regex (allows letters, numbers, plus, dash, underscore, dot)
-  sku_pattern: "^[A-Za-z0-9+\-_.]+$"
+  sku_pattern: "^[A-Za-z0-9+\\-_.]+$"
 ```
 
 > **Validation:** The config is validated with Pydantic.  
@@ -118,7 +130,6 @@ input:
 ## Artifacts per run
 
 All artifacts live under `runs/<PO>/`:
-
 - `new_coast_cart_<PO>_<timestamp>_<hash8>.csv` – ready to import
 - `summary.json` – machine‑readable run summary
 - `summary.md` – human‑readable run summary
@@ -127,7 +138,6 @@ All artifacts live under `runs/<PO>/`:
 - `quarantine.csv` – **only** in `--soft-validate` mode when rows are quarantined
 
 **Summary contents (excerpt):**
-
 ```json
 {
   "po": "1848",
@@ -152,7 +162,6 @@ pytest -q
 ```
 
 The suite covers:
-
 - Happy path (dedupe + totals)
 - Missing column (hard fail)
 - Totals mismatch (hard fail)
@@ -166,7 +175,6 @@ The suite covers:
 
 A workflow at `.github/workflows/ci.yml` runs the test suite on push/PR.  
 **Nice extras to consider** (already supported by the project):
-
 - Python version matrix (3.10–3.13)
 - Linting (`ruff`, `black --check`)
 - Upload `runs/**/summary.json` as artifacts for smoke jobs

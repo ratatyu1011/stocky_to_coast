@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="850" height="921" viewBox="0 0 850 921" role="img" aria-label="Stocky to Vendor Cart ETL architecture diagram">
+<rect x="0" y="0" width="850" height="921" fill="#0d1117" />
+
+    <defs>
+      
+    <style>
+      .box { fill: #161b22; stroke: #30363d; stroke-width: 1.5; }
+      .title { font-family: Arial, Helvetica, sans-serif; font-size: 17px; font-weight: 700; fill: #f0f6fc; }
+      .text { font-family: Arial, Helvetica, sans-serif; font-size: 13px; fill: #f0f6fc; }
+      .small { font-family: Arial, Helvetica, sans-serif; font-size: 12px; fill: #8b949e; }
+      .header { font-family: Arial, Helvetica, sans-serif; font-size: 22px; font-weight: 800; fill: #f0f6fc; }
+      .subheader { font-family: Arial, Helvetica, sans-serif; font-size: 14px; fill: #c9d1d9; }
+      .arrow { stroke: #f0f6fc; stroke-width: 1.2; marker-end: url(#arrowhead); }
+    </style>
+    
+      <marker id="arrowhead" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+        <polygon points="0 0, 7 2.5, 0 5" fill="#f0f6fc" />
+      </marker>
+    </defs>
+    
+<text class="header" x="30" y="50">Stocky → Vendor Cart ETL (One-Page)</text>
+<text class="subheader" x="30" y="72">Validated, auditable CSV pipeline with optional soft-validation and vendor formatting</text>
+<rect class="box" x="30" y="94" width="790" height="85" rx="8" />
+<text class="title" x="44" y="120">1) Inputs</text>
+<text class="text" x="44" y="138">Stocky PO CSV (required): SKU, Qty Ordered, Cost (base), Total Cost (base)</text>
+<text class="text" x="44" y="156">Optional: price_history.csv (SKU, LastCost), vendor config (--vendor or --vendor-config)</text>
+<line class="arrow" x1="425" y1="179" x2="425" y2="201" />
+<rect class="box" x="30" y="201" width="790" height="80" rx="8" />
+<text class="title" x="44" y="227">2) Load &amp; Pre-Clean</text>
+<text class="text" x="44" y="245">Read CSV (pandas), coerce SKU to string, strip/trim, remove zero‑width spaces (ZWSP)</text>
+<text class="text" x="44" y="263">Preserves literal characters in SKUs (e.g., '+').</text>
+<line class="arrow" x1="425" y1="281" x2="425" y2="303" />
+<rect class="box" x="30" y="303" width="790" height="80" rx="8" />
+<text class="title" x="44" y="329">3) Header Map</text>
+<text class="text" x="44" y="347">Alias mapping → canonical columns: SKU, Qty Ordered, Cost (base), Total Cost (base).</text>
+<text class="text" x="44" y="365">Type coercion: int, float; required columns enforced.</text>
+<line class="arrow" x1="425" y1="383" x2="425" y2="405" />
+<rect class="box" x="30" y="405" width="790" height="110" rx="8" />
+<text class="title" x="44" y="431">4) Validate (pandera)</text>
+<text class="text" x="44" y="449">Schema: non‑negative types, cross‑field rule abs(Qty*Cost − Total) ≤ tolerance.</text>
+<text class="text" x="44" y="467">Modes: strict (fail-fast) or --soft-validate (quarantine bad rows, continue).</text>
+<text class="text" x="44" y="485">Optional SKU regex (--sku-pattern) to enforce vendor SKU rules.</text>
+<line class="arrow" x1="425" y1="515" x2="425" y2="537" />
+<rect class="box" x="30" y="537" width="790" height="90" rx="8" />
+<text class="title" x="44" y="563">5) Transform</text>
+<text class="text" x="44" y="581">Deduplicate by SKU; sum quantities; recompute totals; round to money decimals.</text>
+<text class="text" x="44" y="599">Optional variance flags: compare Cost (base) to LastCost (&gt; 20% default).</text>
+<line class="arrow" x1="425" y1="627" x2="425" y2="649" />
+<rect class="box" x="30" y="649" width="790" height="90" rx="8" />
+<text class="title" x="44" y="675">6) Vendor Formatting</text>
+<text class="text" x="44" y="693">Pydantic‑validated config: output columns, delimiter, quoting, decimals, vendor name.</text>
+<text class="text" x="44" y="711">Supports built-ins (coast, erikson_music, erikson_audio) or YAML file.</text>
+<line class="arrow" x1="425" y1="739" x2="425" y2="761" />
+<rect class="box" x="30" y="761" width="790" height="120" rx="8" />
+<text class="title" x="44" y="787">7) Write &amp; Artifacts</text>
+<text class="text" x="44" y="805">CSV: new_coast_cart_&lt;PO&gt;_&lt;YYYYMMDD-HHMM&gt;_&lt;hash8&gt;.csv  (idempotent).</text>
+<text class="text" x="44" y="823">Summary: summary.json / summary.md; Lineage: lineage.json; Logs: stocky2coast.log.</text>
+<text class="text" x="44" y="841">Quarantine: quarantine.csv (only with --soft-validate).</text>
+<text class="small" x="30" y="903">© ETL: Stocky → Coast/Erikson • One‑Page Overview</text>
+</svg>
