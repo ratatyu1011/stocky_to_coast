@@ -1,0 +1,8 @@
+# vendor_configs/coast.yml
+
+name: coast
+output:
+  columns: ["Item Id", "Qty Ordered", "Unit Price", "Extended Price"]
+  delimiter: ","
+  decimal_places: 2
+  quoting: "all"
