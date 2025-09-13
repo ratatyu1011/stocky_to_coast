@@ -1,3 +1,5 @@
+# tests/test_etl.py
+
 import subprocess, sys, json, os, tempfile, shutil, pathlib
 
 def run_cli(args):
@@ -18,8 +20,23 @@ def test_missing_required_column(tmp_path):
     assert res.returncode == 1
     assert "VALIDATION ERROR" in res.stderr
 
+
 def test_totals_mismatch_fails(tmp_path):
     outdir = tmp_path / "runs"
     res = run_cli(["--po","1001","--input","tests/fixtures/bad_totals.csv","--outdir",str(outdir)])
     assert res.returncode == 1
 
+def test_preserve_plus_in_sku(tmp_path):
+    csv_in = tmp_path / "po.csv"
+    csv_in.write_text(
+        "SKU,Qty Ordered,Cost (base),Total Cost (base)\n"
+        "GSP38WB+,1,16.80,16.80\n"
+    )
+    outdir = tmp_path / "runs"
+    res = run_cli(["--po","1010","--input",str(csv_in),"--outdir",str(outdir)])
+    assert res.returncode == 0, res.stderr
+
+    # find the produced CSV and assert the literal value exists
+    produced = list((outdir / "1010").glob("new_coast_cart_1010_*.csv"))[0]
+    txt = produced.read_text()
+    assert "GSP38WB+" in txt  # literal preserved
