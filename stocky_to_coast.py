@@ -2,13 +2,76 @@
 import argparse, sys, hashlib, json, logging
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
+import csv
+import yaml
 import pandas as pd
 import numpy as np
-import pandera as pa
-from pandera import Column, DataFrameSchema, Check
+import pandera.pandas as pa
+from pandera.pandas import Column, DataFrameSchema, Check
 
 IN_COLS = ["SKU", "Qty Ordered", "Cost (base)", "Total Cost (base)"]
 OUT_COLS = ["Item Id", "Qty Ordered", "Unit Price", "Extended Price"]
+STOCKY_ALIASES = {
+    "SKU": ["SKU", "Sku", "Item Id", "ItemID"],
+    "Qty Ordered": ["Qty Ordered", "Quantity Ordered", "Qty"],
+    "Cost (base)": ["Cost (base)", "Unit Cost (base)", "Unit Cost", "Cost"],
+    "Total Cost (base)": ["Total Cost (base)", "Extended Price", "Total"],
+}
+
+DEFAULT_VENDOR_CFG = {
+    "name": "default",
+    "output": {
+        "columns": ["Item Id", "Qty Ordered", "Unit Price", "Extended Price"],
+        "delimiter": ",",
+        "decimal_places": 2,
+        "quoting": "all"
+    }
+}
+
+QUOTING_MAP = {
+    "all": csv.QUOTE_ALL,
+    "minimal": csv.QUOTE_MINIMAL,
+    "nonnumeric": csv.QUOTE_NONNUMERIC,
+    "none": csv.QUOTE_NONE,
+}
+
+def _deep_update(dst: dict, src: dict) -> dict:
+    for k, v in src.items():
+        if isinstance(v, dict) and isinstance(dst.get(k), dict):
+            _deep_update(dst[k], v)
+        else:
+            dst[k] = v
+    return dst
+
+def load_vendor_cfg(vendor: str | None, vendor_config_path: str | None):
+    cfg = dict(DEFAULT_VENDOR_CFG)  # shallow copy
+    data = {}
+    if vendor_config_path:
+        with open(vendor_config_path, "r") as f:
+            data = yaml.safe_load(f) or {}
+    elif vendor:
+        path = Path("vendor_configs") / f"{vendor}.yml"
+        with open(path, "r") as f:
+            data = yaml.safe_load(f) or {}
+    return _deep_update(cfg, data)
+
+def map_to_required(df: pd.DataFrame) -> pd.DataFrame:
+
+    cols = {}
+    for canonical, aliases in STOCKY_ALIASES.items():
+        for a in aliases:
+            if a in df.columns or a.lower() in map(str.lower, df.columns):
+                real = next((c for c in df.columns if c.lower() == a.lower()), None)
+                if real:
+                    cols[canonical] = df[real]
+                    break
+        if canonical not in cols:
+            raise KeyError(f"Missing required column: {canonical}")
+    out = pd.DataFrame(cols)
+    out["Qty Ordered"] = pd.to_numeric(out["Qty Ordered"], errors="raise").astype(int)
+    for c in ["Cost (base)", "Total Cost (base)"]:
+        out[c] = pd.to_numeric(out[c], errors="raise")
+    return out
 
 def setup_logging(run_dir: Path):
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -31,8 +94,8 @@ def schema():
             "Total Cost (base)": Column(float, Check.ge(0.0), nullable=False),
         },
         checks=Check(
-            lambda df: np.isclose(df["Qty Ordered"] * df["Cost (base)"], df["Total Cost (base)"], atol=0.01),
-            error="Row total mismatch: |Qty*Cost - Total| > 0.01"
+            lambda df: ((df["Qty Ordered"] * df["Cost (base)"]) - df["Total Cost (base)"]).abs() <= 0.01,
+            error="Row total mismatch: |Qty*Cost - Total| > 0.01",
         ),
         strict=True,
         coerce=True
@@ -79,6 +142,10 @@ def main():
     ap.add_argument("--input", required=True, help="Path to Stocky CSV (po_XXXX.csv)")
     ap.add_argument("--outdir", default="runs", help="Output directory for artifacts")
     ap.add_argument("--price-history", default="", help="Optional price_history.csv with columns SKU,LastCost")
+    grp = ap.add_mutually_exclusive_group(required=False)
+    grp.add_argument("--vendor", choices=["coast", "erikson_music", "erikson_audio"],
+                    help="Built-in vendor config")
+    grp.add_argument("--vendor-config", help="Path to a YAML vendor config")
     args = ap.parse_args()
 
     run_dir = Path(args.outdir) / f"{args.po}"
@@ -86,9 +153,12 @@ def main():
     logger.info(f"Starting run for PO {args.po}")
 
     try:
-        df_in = pd.read_csv(args.input)
+        df_in = pd.read_csv(args.input, dtype={"SKU": "string"}, keep_default_na=False)
+        df_in["SKU"] = df_in["SKU"].astype("string").str.replace("\u200b","", regex=False).str.strip()
+
+        df_req = map_to_required(df_in)
         # Validate schema and cross-field totals
-        validated = schema().validate(df_in[IN_COLS])
+        validated = schema().validate(df_req)
         # Transform business rules
         df_t = dedupe_and_normalize(validated)
         # Build output in Coast format
@@ -97,7 +167,7 @@ def main():
         hh = hash_output(out)
         ts = pd.Timestamp.utcnow().strftime("%Y%m%d-%H%M")
         out_path = run_dir / f"new_coast_cart_{args.po}_{ts}_{hh}.csv"
-        out.to_csv(out_path, index=False)
+        out.to_csv(out_path, index=False, quoting=csv.QUOTE_ALL, lineterminator="\n")
 
         # Optional variance flags
         flags = []
@@ -131,9 +201,9 @@ def main():
         print(json.dumps(summary, indent=2))
         sys.exit(0)
 
-    except pa.errors.SchemaError as e:
+    except (pa.errors.SchemaError, KeyError, ValueError) as e:
         logger.exception("Validation failed")
-        print(f"VALIDATION ERROR:\\n{e}", file=sys.stderr)
+        print(f"VALIDATION ERROR:\n{e}", file=sys.stderr)
         sys.exit(1)
     except Exception as e:
         logger.exception("Unhandled error")
