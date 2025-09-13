@@ -30,8 +30,6 @@ Manual re‑entry between Stocky and vendor carts is slow and error‑prone. Thi
   </picture>
 </p>
 
-> **Print:** open either SVG in a new tab and print; they’re vector so they’re crisp on Letter/A4.
-
 ---
 
 ## Data Contract (Input → Output)
